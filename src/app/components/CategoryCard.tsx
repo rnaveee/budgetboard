@@ -6,8 +6,6 @@ type CategoryCardProps = {
 
 export default function CategoryCard({ category }: CategoryCardProps){
 
-
-
     return (
         <div
             className="card max-w-xs bg-white shadow-sm flex border"

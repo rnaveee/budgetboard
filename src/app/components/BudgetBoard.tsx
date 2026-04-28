@@ -9,40 +9,25 @@ import SavingsForm from "./SavingsForm";
 import handleCalculation from "../utils/handleCalculation";
 import type Category from "../../types/category";
 import CreateCategoryModal from "./CreateCategoryModal"
+import getCategories from "../utils/getCategories";
 
-const categories: Category[] = [
-  {
-    id: "1",
-    budgetId: "budget-1",
-    name: "Food",
-    budget: 400,
-    description: "The food I spend in a month",
-    color: "#22c55e",
-  },
-  {
-    id: "2",
-    budgetId: "budget-1",
-    name: "Japan Trip",
-    budget: 100,
-    description: "Japan trip budget for food and stuff",
-    color: "#3b82f6",
-  },
-  {
-    id: "3",
-    budgetId: "budget-1",
-    name: "Clothes",
-    budget: 100,
-    description: "Clothes I spend money on per month",
-    color: "#f97316",
-  },
-];
 
 export default function BudgetBoard() {
   const [income, setIncome] = useState("");
   const [savings, setSavings] = useState("");
   const [isCategoryModalOpen, setIsCategoryModalOpen] = useState(false);
+  const [categories, setCategories] = useState<Category[]>(() => {
+    return getCategories();
+  });
+  const [editingCategory, setEditingCategory] = useState<Category | null>(null);
 
-  
+  function addCategory(newCategory: Category){
+    const updatedCategories = [...categories, newCategory];
+
+    setCategories(updatedCategories);
+
+    localStorage.setItem("categories", JSON.stringify(updatedCategories));
+  }
 
   const leftoverMoney = handleCalculation({
     income,
@@ -61,7 +46,7 @@ export default function BudgetBoard() {
       </div>
       <div className="flex mt-4 justify-center gap-3 flex-wrap">
         {categories.map((category) => (
-          <CategoryCard key={category.id} category={category} />
+          <CategoryCard onEdit={() => setEditingCategory(category)} key={category.id} category={category} />
         ))}
         <div className="flex w-full justify-center sm:w-auto sm:items-center">
           <NewCategoryButton onClick={() => setIsCategoryModalOpen(true)}/>
@@ -70,6 +55,7 @@ export default function BudgetBoard() {
       {isCategoryModalOpen && (
         <CreateCategoryModal
           onClose={() => setIsCategoryModalOpen(false)}
+          onAddCategory={addCategory}
         />
       )}
     </section>

@@ -17,9 +17,8 @@ export default function IncomeForm(){
             <div>
                 <form className="flex flex-col gap-3" onSubmit={ handleSubmit }>
                     <div className="flex items-center gap-2 pt-3">
-                        <div className="text-xl">$</div>
                         <input
-                        type="number"
+                        type="string"
                         placeholder="$1000, 20%"
                         value={income}
                         onChange={(e) => setIncome(e.target.value)}

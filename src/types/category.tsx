@@ -3,6 +3,8 @@ type Category = {
   budgetId: string;
   name: string;
   budget: number;
+  description: string;
+  color: string;
 };
 
 export default Category;

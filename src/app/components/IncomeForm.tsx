@@ -12,11 +12,12 @@ export default function IncomeForm(){
     }
 
     return (
-        <div className="bg-white shadow-md rounded-xl p-6 max-w-md w-full flex flex-col">
+        <div className="bg-white shadow-md rounded-xl p-6 max-w-md w-full flex flex-col items-center">
             <h1 className='text-xl'>Your monthly income</h1>
             <div>
                 <form className="flex flex-col gap-3" onSubmit={ handleSubmit }>
                     <div className="flex items-center gap-2 pt-3">
+                        <div className="text-xl">$</div>
                         <input
                         type="number"
                         placeholder="$1000"
@@ -24,7 +25,6 @@ export default function IncomeForm(){
                         onChange={(e) => setIncome(e.target.value)}
                         className="border rounded-lg p-3 focus:outline-none focus:ring-2 focus:ring-blue-500"
                         />
-                        <div className="text-xl">$</div>
                     </div>
                 </form>
             </div>

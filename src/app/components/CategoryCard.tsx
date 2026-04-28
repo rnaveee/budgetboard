@@ -1,13 +1,32 @@
+import type Category from "../../types/category";
+
+type CategoryCardProps = {
+    category: Category;
+}
+
+export default function CategoryCard({ category }: CategoryCardProps){
 
 
-export default function CategoryCard(){
+
     return (
-        <div className="card max-w-xs bg-white shadow-sm">
-            <div className="card-body">
-                <h2 className="card-title">Card Title</h2>
-                <p>A card component has a figure, a body part, and inside body there are title and actions parts</p>
+        <div
+            className="card max-w-xs bg-white shadow-sm flex border"
+            style={{ borderColor: category.color }}
+        >
+            <div className="card-body flex items-center">
+                <h2 className="card-title">{category.name}</h2>
+                <h2
+                    className="text-3xl font-bold"
+                    style={{ color: category.color }}
+                >
+                    {category.budget}$
+                </h2>
+                <p>{category.description}</p>
             </div>
-            <figure className='flex min-h-3 bg-gray-500'>
+            <figure
+                className='flex min-h-3'
+                style={{ backgroundColor: category.color }}
+            >
             </figure>
         </div>
     )

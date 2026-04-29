@@ -5,6 +5,7 @@ import CategoryCard from "./CategoryCard";
 import FreeMoneyCard from "./FreeMoneyCard";
 import IncomeForm from "./IncomeForm";
 import NewCategoryButton from "./NewCategoryButton";
+import SavingsCard from "./SavingsCard";
 import SavingsForm from "./SavingsForm";
 import handleCalculation from "../utils/handleCalculation";
 import type Category from "../../types/category";
@@ -91,8 +92,9 @@ export default function BudgetBoard() {
         <IncomeForm income={income} onIncomeChange={handleNewIncome} />
         <SavingsForm savings={savings} onSavingsChange={handleNewSavings} />
       </div>
-      <div className="flex justify-center mt-3">
+      <div className="mt-3 flex flex-col items-center justify-center gap-3 lg:flex-row">
         <FreeMoneyCard leftoverMoney={leftoverMoney} />
+        <SavingsCard savings={savings} />
       </div>
       <div className="flex mt-4 justify-center gap-3 flex-wrap">
         {categories.map((category) => (

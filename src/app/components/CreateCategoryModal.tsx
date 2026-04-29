@@ -13,7 +13,7 @@ export default function CreateCategoryModal({ onClose, onAddCategory }: CreateCa
     const [title, setTitle] = useState("");
     const [budget, setBudget] = useState("");
     const [description, setDescription] = useState("");
-    const [color, setColor] = useState("#22c55e");
+    const [color, setColor] = useState("#3b3b3b");
 
     function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
         event.preventDefault();

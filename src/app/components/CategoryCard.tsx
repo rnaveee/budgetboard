@@ -2,7 +2,6 @@ import type Category from "../../types/category";
 
 type CategoryCardProps = {
     category: Category;
-    onEdit: (category: Category) => void;
 }
 
 export default function CategoryCard({ category }: CategoryCardProps){

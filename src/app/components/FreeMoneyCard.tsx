@@ -3,6 +3,7 @@ type FreeMoneyCardProps = {
 };
 
 export default function FreeMoneyCard({ leftoverMoney }: FreeMoneyCardProps){
+  const moneyColor = leftoverMoney < 0 ? "text-red-700" : "text-green-700";
 
   return (
         <div className="card w-full max-w-xl bg-white shadow-lg border border-green-200 py-5 px-3">
@@ -11,7 +12,7 @@ export default function FreeMoneyCard({ leftoverMoney }: FreeMoneyCardProps){
                     <h2 className="card-title text-3xl">Leftover Money</h2>
                     <p className="text-xl">Money after budgeting</p>
                 </div>
-                <h1 className="text-4xl font-bold text-green-700">
+                <h1 className={`text-4xl font-bold ${moneyColor}`}>
                   ${leftoverMoney.toFixed(2)}
                 </h1>
             </div>

@@ -59,7 +59,7 @@ export default function CreateCategoryModal({ onClose, onAddCategory }: CreateCa
                             <span className="font-medium">Budget</span>
                             <input
                                 type="number"
-                                placeholder="400"
+                                placeholder="400 (per month)"
                                 min="0"
                                 className="w-full rounded-lg border px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
                                 onChange={(event) => setBudget(event.target.value)}

@@ -6,11 +6,8 @@ export default function Header() {
       </h1>
 
       <nav className="flex flex-wrap justify-center gap-x-4 gap-y-2 sm:justify-start">
-        <a className="text-base font-medium text-black sm:text-lg" href="#">
+        <a className="text-base font-medium text-black sm:text-lg" href="https://ca.linkedin.com/in/ryan-nave-36bb62333">
           Contact me
-        </a>
-        <a className="text-base font-medium text-black sm:text-lg" href="#">
-          Settings
         </a>
       </nav>
     </header>

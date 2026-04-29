@@ -94,7 +94,7 @@ export default function BudgetBoard() {
       </div>
       <div className="mt-3 flex flex-col items-center justify-center gap-3 lg:flex-row">
         <FreeMoneyCard leftoverMoney={leftoverMoney} />
-        <SavingsCard savings={savings} />
+        <SavingsCard income={income} savings={savings} />
       </div>
       <div className="flex mt-4 justify-center gap-3 flex-wrap">
         {categories.map((category) => (

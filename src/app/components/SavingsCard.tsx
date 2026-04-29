@@ -1,10 +1,28 @@
 type SavingsCardProps = {
+  income: string;
   savings: string;
 };
 
-export default function SavingsCard({ savings }: SavingsCardProps) {
+function parseMoney(value: string) {
+  return Number(value.replace("$", "").replaceAll(",", "")) || 0;
+}
+
+function getSavingsAmount(income: string, savings: string) {
+  const monthlyIncome = parseMoney(income);
   const trimmedSavings = savings.trim();
-  const savingsDisplay = trimmedSavings ? trimmedSavings : "$0.00";
+
+  if (trimmedSavings.endsWith("%")) {
+    const percentage = Number(trimmedSavings.replace("%", ""));
+    return monthlyIncome * (percentage / 100);
+  }
+
+  return parseMoney(trimmedSavings);
+}
+
+export default function SavingsCard({ income, savings }: SavingsCardProps) {
+  const trimmedSavings = savings.trim();
+  const savingsAmount = trimmedSavings ? getSavingsAmount(income, savings) : 0;
+  const savingsDisplay = `$${savingsAmount.toFixed(2)}`;
 
   return (
     <div className="card w-full max-w-sm bg-white px-3 py-3 shadow-lg border border-green-200">

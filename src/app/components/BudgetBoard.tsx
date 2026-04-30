@@ -115,6 +115,11 @@ export default function BudgetBoard() {
         return;
       }
 
+      if (!supabase) {
+        showError("Supabase is not configured. Add your Supabase environment variables in Vercel.");
+        return;
+      }
+
       const localIncome = getStoredValue(STORAGE_KEYS.income, "");
       const localSavings = getStoredValue(STORAGE_KEYS.savings, "");
 
@@ -226,8 +231,8 @@ export default function BudgetBoard() {
       return;
     }
 
-    if (!isSupabaseLoaded) {
-      showError("Supabase session is still loading.");
+    if (!isSupabaseLoaded || !supabase) {
+      showError("Supabase is not ready. Check your Supabase environment variables.");
       return;
     }
 
@@ -259,8 +264,8 @@ export default function BudgetBoard() {
       return;
     }
 
-    if (!isSupabaseLoaded) {
-      showError("Supabase session is still loading.");
+    if (!isSupabaseLoaded || !supabase) {
+      showError("Supabase is not ready. Check your Supabase environment variables.");
       return;
     }
 
@@ -286,8 +291,8 @@ export default function BudgetBoard() {
       return;
     }
 
-    if (!isSupabaseLoaded) {
-      showError("Supabase session is still loading.");
+    if (!isSupabaseLoaded || !supabase) {
+      showError("Supabase is not ready. Check your Supabase environment variables.");
       return;
     }
 
@@ -310,6 +315,11 @@ export default function BudgetBoard() {
       return;
     }
 
+    if (!isSupabaseLoaded || !supabase) {
+      showError("Supabase is not ready. Check your Supabase environment variables.");
+      return;
+    }
+
     const { error } = await supabase.from("budget_settings").upsert({
       clerk_user_id: user.id,
       income: newIncome,
@@ -327,6 +337,11 @@ export default function BudgetBoard() {
 
     if (!isSignedIn || !user) {
       saveStoredValue(STORAGE_KEYS.savings, newSavings);
+      return;
+    }
+
+    if (!isSupabaseLoaded || !supabase) {
+      showError("Supabase is not ready. Check your Supabase environment variables.");
       return;
     }
 

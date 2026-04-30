@@ -8,9 +8,16 @@ export function useSupabase() {
   const { isLoaded, session } = useSession();
 
   const client = useMemo(() => {
+    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+    const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+
+    if (!supabaseUrl || !supabaseAnonKey) {
+      return null;
+    }
+
     return createClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL!,
-      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+      supabaseUrl,
+      supabaseAnonKey,
       {
         accessToken: async () => session?.getToken() ?? null,
       }
@@ -20,5 +27,6 @@ export function useSupabase() {
   return {
     client,
     isLoaded,
+    isConfigured: Boolean(client),
   };
 }

@@ -1,7 +1,7 @@
 'use client';
 
+import { useUser } from "@clerk/nextjs";
 import { useEffect, useState } from "react";
-import type { User } from "@supabase/supabase-js";
 import CategoryCard from "./CategoryCard";
 import FreeMoneyCard from "./FreeMoneyCard";
 import IncomeForm from "./IncomeForm";
@@ -12,54 +12,121 @@ import handleCalculation from "../utils/handleCalculation";
 import type Category from "../../types/category";
 import CreateCategoryModal from "./CreateCategoryModal"
 import EditCategoryModal from "./EditCategoryModal";
-import { supabase } from "../utils/supabase";
+import { useSupabase } from "../utils/supabase";
+
+const STORAGE_KEYS = {
+  income: "income",
+  savings: "savings",
+  categories: "categories",
+};
+
+type CategoryRow = {
+  id: string;
+  budget_id: string;
+  name: string;
+  budget: number;
+  description: string;
+  color: string;
+};
+
+function getStoredValue<T>(key: string, fallback: T): T {
+  if (typeof window === "undefined") {
+    return fallback;
+  }
+
+  const storedValue = localStorage.getItem(key);
+
+  if (!storedValue) {
+    return fallback;
+  }
+
+  return JSON.parse(storedValue) as T;
+}
+
+function saveStoredValue<T>(key: string, value: T) {
+  localStorage.setItem(key, JSON.stringify(value));
+}
+
+function mapCategoryRow(row: CategoryRow): Category {
+  return {
+    id: row.id,
+    budgetId: row.budget_id,
+    name: row.name,
+    budget: row.budget,
+    description: row.description,
+    color: row.color,
+  };
+}
 
 export default function BudgetBoard() {
-  const [income, setIncome] = useState("");
-  const [savings, setSavings] = useState("");
+  const { isLoaded, isSignedIn, user } = useUser();
+  const [income, setIncome] = useState(() =>
+    getStoredValue(STORAGE_KEYS.income, "")
+  );
+  const [savings, setSavings] = useState(() =>
+    getStoredValue(STORAGE_KEYS.savings, "")
+  );
   const [isCategoryModalOpen, setIsCategoryModalOpen] = useState(false);
-  const [categories, setCategories] = useState<Category[]>([]);
+  const [categories, setCategories] = useState<Category[]>(() =>
+    getStoredValue<Category[]>(STORAGE_KEYS.categories, [])
+  );
   const [editingCategory, setEditingCategory] = useState<Category | null>(null);
-  const [user, setUser] = useState<User | null>(null);
+
+  const supabase = useSupabase();
 
   useEffect(() => {
-    async function checkUser() {
-      const { data } = await supabase.auth.getUser();
-      setUser(data.user);
-    }
-
-    checkUser();
-
-    const { data: authListener } = supabase.auth.onAuthStateChange(
-      (_event, session) => {
-        setUser(session?.user ?? null);
+    async function syncSupabaseCategories() {
+      if (!isLoaded || !isSignedIn || !user) {
+        return;
       }
-    );
 
-    return () => {
-      authListener.subscription.unsubscribe();
-    }
-  }, []);
+      const localCategories = getStoredValue<Category[]>(
+        STORAGE_KEYS.categories,
+        []
+      );
 
-  useEffect(() => {
-    const savedIncome = localStorage.getItem("income");
+      if (localCategories.length > 0) {
+        const rows = localCategories.map((category) => ({
+          id: category.id,
+          clerk_user_id: user.id,
+          budget_id: category.budgetId,
+          name: category.name,
+          budget: category.budget,
+          description: category.description,
+          color: category.color,
+        }));
+        
+        const { error } = await supabase
+          .from("categories")
+          .upsert(rows, { onConflict: "id" });
+        if(error){
+          console.error(error);
+          return;
+        }
 
-    if (savedIncome) {
-      setIncome(JSON.parse(savedIncome));
-    }
+        localStorage.removeItem(STORAGE_KEYS.categories);
+      }
 
-    const savedSavings = localStorage.getItem("savings");
+      const { data, error } = await supabase
+          .from("categories")
+          .select("id, budget_id, name, budget, description, color")
+          .eq("clerk_user_id", user.id);
 
-    if (savedSavings) {
-      setSavings(JSON.parse(savedSavings));
-    }
+        if (error) {
+          console.error(error);
+          return;
+        }
 
-    const savedCategories = localStorage.getItem("categories");
+        setCategories((data ?? []).map(mapCategoryRow));
+      }
 
-    if (savedCategories) {
-      setCategories(JSON.parse(savedCategories));
-    }
-  }, []);
+    syncSupabaseCategories();
+  }, [isLoaded, isSignedIn, user, supabase]);
+
+  function saveLocalCategories(updatedCategories: Category[]) {
+    setCategories(updatedCategories);
+    saveStoredValue(STORAGE_KEYS.categories, updatedCategories);
+  }
 
   /*  category functions  */
   async function deleteCategory(deletedCategory: Category) {
@@ -67,16 +134,17 @@ export default function BudgetBoard() {
       return category.id !== deletedCategory.id;
     });
 
-    if(!user){
-      localStorage.setItem("categories", JSON.stringify(updatedCategories));
+    if (!isSignedIn || !user) {
+      saveLocalCategories(updatedCategories);
       return;
     }
 
     const { error } = await supabase
-      .from("budgets")
+      .from("categories")
       .delete()
       .eq("id", deletedCategory.id)
-      .eq("user.id", user.id);
+      .eq("clerk_user_id", user.id);
+
     if(error){
       console.error(error);
       return;
@@ -94,8 +162,8 @@ export default function BudgetBoard() {
       return category;
     });
 
-    if(!user){
-      localStorage.setItem("categories", JSON.stringify(updatedCategories));
+    if (!isSignedIn || !user) {
+      saveLocalCategories(updatedCategories);
       return;
     }
 
@@ -109,7 +177,7 @@ export default function BudgetBoard() {
         color: updatedCategory.color,
       })
       .eq("id", updatedCategory.id)
-      .eq("user_id", user.id);
+      .eq("clerk_user_id", user.id);
 
     if (error) {
       console.error(error);
@@ -122,14 +190,14 @@ export default function BudgetBoard() {
   async function addCategory(newCategory: Category){
     const updatedCategories = [...categories, newCategory];
 
-    if(!user){
-      localStorage.setItem('categories', JSON.stringify(updatedCategories));
+    if (!isSignedIn || !user) {
+      saveLocalCategories(updatedCategories);
       return;
     }
 
     const { error } = await supabase.from("categories").insert({
       id: newCategory.id,
-      user_id: user.id,
+      clerk_user_id: user.id,
       budget_id: newCategory.budgetId,
       name: newCategory.name,
       budget: newCategory.budget,
@@ -146,12 +214,12 @@ export default function BudgetBoard() {
 
   function handleNewIncome(newIncome: string){
     setIncome(newIncome);
-    localStorage.setItem('income', JSON.stringify(newIncome));
+    saveStoredValue(STORAGE_KEYS.income, newIncome);
   }
 
   function handleNewSavings(newSavings: string){
     setSavings(newSavings);
-    localStorage.setItem('savings', JSON.stringify(newSavings));
+    saveStoredValue(STORAGE_KEYS.savings, newSavings);
   }
 
   const leftoverMoney = handleCalculation({

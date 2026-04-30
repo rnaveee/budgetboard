@@ -9,6 +9,9 @@ export default function Header() {
         <a className="text-base font-medium text-black sm:text-lg" href="https://ca.linkedin.com/in/ryan-nave-36bb62333">
           Contact me
         </a>
+        <a className="text-base font-medium text-black sm:text-lg" href="./account/">
+          Sign in
+        </a>
       </nav>
     </header>
   );

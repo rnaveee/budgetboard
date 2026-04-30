@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from "react";
+import type { User } from "@supabase/supabase-js";
 import CategoryCard from "./CategoryCard";
 import FreeMoneyCard from "./FreeMoneyCard";
 import IncomeForm from "./IncomeForm";
@@ -11,6 +12,7 @@ import handleCalculation from "../utils/handleCalculation";
 import type Category from "../../types/category";
 import CreateCategoryModal from "./CreateCategoryModal"
 import EditCategoryModal from "./EditCategoryModal";
+import { supabase } from "../utils/supabase";
 
 export default function BudgetBoard() {
   const [income, setIncome] = useState("");
@@ -18,6 +20,26 @@ export default function BudgetBoard() {
   const [isCategoryModalOpen, setIsCategoryModalOpen] = useState(false);
   const [categories, setCategories] = useState<Category[]>([]);
   const [editingCategory, setEditingCategory] = useState<Category | null>(null);
+  const [user, setUser] = useState<User | null>(null);
+
+  useEffect(() => {
+    async function checkUser() {
+      const { data } = await supabase.auth.getUser();
+      setUser(data.user);
+    }
+
+    checkUser();
+
+    const { data: authListener } = supabase.auth.onAuthStateChange(
+      (_event, session) => {
+        setUser(session?.user ?? null);
+      }
+    );
+
+    return () => {
+      authListener.subscription.unsubscribe();
+    }
+  }, []);
 
   useEffect(() => {
     const savedIncome = localStorage.getItem("income");
@@ -39,17 +61,31 @@ export default function BudgetBoard() {
     }
   }, []);
 
-  function deleteCategory(deletedCategory: Category) {
+  /*  category functions  */
+  async function deleteCategory(deletedCategory: Category) {
     const updatedCategories = categories.filter((category) => {
       return category.id !== deletedCategory.id;
     });
 
+    if(!user){
+      localStorage.setItem("categories", JSON.stringify(updatedCategories));
+      return;
+    }
+
+    const { error } = await supabase
+      .from("budgets")
+      .delete()
+      .eq("id", deletedCategory.id)
+      .eq("user.id", user.id);
+    if(error){
+      console.error(error);
+      return;
+    }
+
     setCategories(updatedCategories);
-    localStorage.setItem("categories", JSON.stringify(updatedCategories));
   }
 
-
-  function updateCategory(updatedCategory: Category){
+  async function updateCategory(updatedCategory: Category){
     const updatedCategories = categories.map((category) => {
       if(category.id === updatedCategory.id){
         return updatedCategory;
@@ -58,14 +94,52 @@ export default function BudgetBoard() {
       return category;
     });
 
+    if(!user){
+      localStorage.setItem("categories", JSON.stringify(updatedCategories));
+      return;
+    }
+
+    const { error } = await supabase
+      .from("categories")
+      .update({
+        budget_id: updatedCategory.budgetId,
+        name: updatedCategory.name,
+        budget: updatedCategory.budget,
+        description: updatedCategory.description,
+        color: updatedCategory.color,
+      })
+      .eq("id", updatedCategory.id)
+      .eq("user_id", user.id);
+
+    if (error) {
+      console.error(error);
+      return;
+    }
+
     setCategories(updatedCategories);
-    localStorage.setItem("categories", JSON.stringify(updatedCategories));
   }
 
-  function addCategory(newCategory: Category){
+  async function addCategory(newCategory: Category){
     const updatedCategories = [...categories, newCategory];
 
-    localStorage.setItem('categories', JSON.stringify(updatedCategories));
+    if(!user){
+      localStorage.setItem('categories', JSON.stringify(updatedCategories));
+      return;
+    }
+
+    const { error } = await supabase.from("categories").insert({
+      id: newCategory.id,
+      user_id: user.id,
+      budget_id: newCategory.budgetId,
+      name: newCategory.name,
+      budget: newCategory.budget,
+      description: newCategory.description,
+      color: newCategory.color,
+    });
+    if(error){
+      console.error(error);
+      return;
+    }
 
     setCategories(updatedCategories);
   }

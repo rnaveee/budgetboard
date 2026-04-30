@@ -5,7 +5,7 @@ import type Category from "../../types/category";
 
 type CreateCategoryModalProps = {
     onClose: () => void;
-    onAddCategory: (category: Category) => void;
+    onAddCategory: (category: Category) => void | Promise<void>;
 };
 
 export default function CreateCategoryModal({ onClose, onAddCategory }: CreateCategoryModalProps){
@@ -15,7 +15,7 @@ export default function CreateCategoryModal({ onClose, onAddCategory }: CreateCa
     const [description, setDescription] = useState("");
     const [color, setColor] = useState("#3b3b3b");
 
-    function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
+    async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
         event.preventDefault();
 
         const newCategory: Category = {
@@ -27,7 +27,7 @@ export default function CreateCategoryModal({ onClose, onAddCategory }: CreateCa
             color,
         };
 
-        onAddCategory(newCategory);
+        await onAddCategory(newCategory);
         onClose();
     }
 

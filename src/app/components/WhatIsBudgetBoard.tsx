@@ -24,9 +24,7 @@ export default function WhatIsBudgetBoard() {
           Data
         </div>
         <p>
-          BudgetBoard stores your settings and budgets on your local machine, so you can only access your budgets on the device you created it on.
-          <br/>
-          <strong>Sharing between other devices will come soon!</strong>
+          BudgetBoard can either save on your local device signed out, or you can sign in at the top to share your BudgetBoard between devices!
 
         </p>
       </div>

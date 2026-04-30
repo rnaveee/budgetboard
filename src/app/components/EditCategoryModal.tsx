@@ -5,8 +5,8 @@ import { useState } from 'react';
 type EditCategoryModalProps = {
     category: Category;
     onClose: () => void;
-    onUpdateCategory: (category: Category) => void;
-    onDeleteCategory: (category: Category) => void;
+    onUpdateCategory: (category: Category) => void | Promise<void>;
+    onDeleteCategory: (category: Category) => void | Promise<void>;
 };
 
 export default function EditCategoryModal({ category, onClose, onUpdateCategory, onDeleteCategory }: EditCategoryModalProps){
@@ -15,7 +15,7 @@ export default function EditCategoryModal({ category, onClose, onUpdateCategory,
     const [description, setDescription] = useState(category.description);
     const [color, setColor] = useState(category.color);
 
-    function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
+    async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
         event.preventDefault();
 
         const updatedCategory: Category = {
@@ -26,7 +26,7 @@ export default function EditCategoryModal({ category, onClose, onUpdateCategory,
             color,
         };
 
-        onUpdateCategory(updatedCategory);
+        await onUpdateCategory(updatedCategory);
         onClose();
     }
 
@@ -92,8 +92,8 @@ export default function EditCategoryModal({ category, onClose, onUpdateCategory,
                             <button
                                 type="button"
                                 className="flex-1 rounded-lg bg-red-600 px-4 py-2 font-medium text-white hover:bg-red-500 active:bg-red-400"
-                                onClick={() => {
-                                    onDeleteCategory(category)
+                                onClick={async () => {
+                                    await onDeleteCategory(category)
                                     onClose();
                                 }}
                             >
